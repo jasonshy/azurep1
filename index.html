@@ -37,30 +37,39 @@
 
     async function initAuth() {
     try {
+        console.log("INIT AUTH START");
+
         await msalInstance.initialize();
+        console.log("MSAL initialized");
 
         const response = await msalInstance.handleRedirectPromise();
+        console.log("handleRedirectPromise response:", response);
 
         if (response && response.account) {
+            console.log("Got account from response:", response.account);
             msalInstance.setActiveAccount(response.account);
             showPage();
             return;
         }
 
-        const currentAccounts = msalInstance.getAllAccounts();
-        if (currentAccounts.length > 0) {
-            msalInstance.setActiveAccount(currentAccounts[0]);
+        const accounts = msalInstance.getAllAccounts();
+        console.log("Accounts from getAllAccounts():", accounts);
+
+        if (accounts.length > 0) {
+            msalInstance.setActiveAccount(accounts[0]);
             showPage();
             return;
         }
 
-        // No response, no accounts → go to login
+        console.log("No account found → redirecting to login.html");
         window.location.href = "login.html";
+
     } catch (err) {
         console.error("Auth Error:", err);
         window.location.href = "login.html";
     }
 }
+
 
 
 
