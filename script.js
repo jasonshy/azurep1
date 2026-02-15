@@ -1,4 +1,4 @@
-let isScanning = true; // Toggle to prevent multiple scans of the same item
+let isScanning = true;
 
 function startScanner() {
     Quagga.init({
@@ -18,14 +18,12 @@ function startScanner() {
     });
 }
 
-// Logic when a barcode is detected
 Quagga.onDetected(function (data) {
-    if (!isScanning) return; // Skip if we are currently editing an item
+    if (!isScanning) return; 
 
     const code = data.codeResult.code;
-    isScanning = false; // "Pause" scanning logic
+    isScanning = false; // Stop processing new codes
     
-    // Visual cue that scan is paused
     document.getElementById('scanner-container').style.opacity = "0.5";
     document.getElementById('status').innerText = `Scanned: ${code}`;
     
@@ -43,47 +41,47 @@ async function fetchProductData(barcode) {
             document.getElementById('brand').innerText = product.brands || "Unknown Brand";
             document.getElementById('name').innerText = product.product_name || "Unknown Name";
             document.getElementById('volume').innerText = product.quantity || "Not specified";
-            document.getElementById('status').innerText = "Product Found! Edit & Submit.";
+            document.getElementById('status').innerText = "Product Found! Select tag and Submit.";
         } else {
-            document.getElementById('status').innerText = "Not found. Try again.";
-            resumeScanning(); // Restart if nothing found
+            // Even if not found, we keep isScanning = false so the user can see the "Not Found" message
+            document.getElementById('brand').innerText = "N/A";
+            document.getElementById('name').innerText = "Not Found in Database";
+            document.getElementById('volume').innerText = "-";
+            document.getElementById('status').innerText = "Barcode unknown. Press Submit to scan next.";
         }
     } catch (error) {
-        document.getElementById('status').innerText = "API Error.";
-        resumeScanning();
+        document.getElementById('status').innerText = "API Error. Press Submit to try again.";
     }
 }
 
-// Function to turn scanning back on
-function resumeScanning() {
-    isScanning = true;
-    document.getElementById('scanner-container').style.opacity = "1";
-    document.getElementById('status').innerText = "Scanning...";
-}
-
-// SUBMIT BUTTON
+// THE RESET BUTTON (SUBMIT)
 document.getElementById('submit-btn').addEventListener('click', function() {
+    // 1. Gather data if you need to save it
     const activeBtn = document.querySelector('.btn.active');
-    if (!activeBtn) {
+    
+    // Optional: Only alert if an item was actually found
+    if (document.getElementById('name').innerText !== "Not Found in Database" && !activeBtn) {
         alert("Please select Reclamation or Waste!");
         return;
     }
 
-    // 1. (Your Database Logic Here)
-    console.log("Submitted successfully");
-
-    // 2. Clear UI
+    // 2. Clear the UI fields
     document.getElementById('brand').innerText = "-";
     document.getElementById('name').innerText = "-";
     document.getElementById('volume').innerText = "-";
     document.getElementById('quantity').value = 1;
     document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
 
-    // 3. Resume the scan logic without restarting the hardware
-    resumeScanning();
+    // 3. IMPORTANT: Reactivate the scanner
+    isScanning = true;
+    document.getElementById('scanner-container').style.opacity = "1";
+    document.getElementById('status').innerText = "Scanning...";
+    
+    // Just in case Quagga actually stopped, this ensures it's running
+    Quagga.start(); 
 });
 
-// Button Selection Logic
+// Tag selection logic
 document.querySelectorAll('.btn').forEach(button => {
     button.addEventListener('click', function() {
         document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
@@ -91,5 +89,4 @@ document.querySelectorAll('.btn').forEach(button => {
     });
 });
 
-// Start for the first time
 startScanner();
