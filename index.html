@@ -28,26 +28,23 @@
                 const currentAccounts = msalInstance.getAllAccounts();
 
                 if (response || currentAccounts.length > 0) {
-                    // SUCCESS: We are logged in!
                     console.log("Logged in!");
-                    // Now show the page content
-                    document.documentElement.style.display = "block";
+                    // Show the body
                     document.body.style.display = "block";
                 } else {
-                    // FAILURE: Not logged in.
-                    window.location.href = "login.html";
+                    // Stop everything and leave
+                    window.location.replace("login.html");
+                    return; 
                 }
             } catch (err) {
                 console.error("Auth Error:", err);
-                window.location.href = "login.html";
+                window.location.replace("login.html");
             }
         }
-
         checkLogin();
     </script>
 </head>
 <body>
-
     <h1>Reclamation</h1>
 
     <div id="scanner-container"></div>
@@ -56,7 +53,7 @@
         <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
         <hr>
         <div id="product-info">
-	    <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
+            <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
             <p><strong>Brand:</strong> <span id="brand">-</span></p>
             <p><strong>Name:</strong> <span id="name">-</span></p>
             <p><strong>Volume:</strong> <span id="volume">-</span></p>
@@ -66,13 +63,14 @@
                 <input type="number" id="quantity" value="1" min="0">
             </div>
         </div>
-	<div class="button-group">
-	    <button class="btn btn-reclamation">Reclamation</button>
+        <div class="button-group">
+            <button class="btn btn-reclamation">Reclamation</button>
             <button class="btn btn-waste">Waste</button>    
-	</div>
-	<div class="submit-group">
-	    <button id="cancel-btn">Cancel</button>
-	    <button id="submit-btn">Submit Entry</button>
+        </div>
+        <div class="submit-group">
+            <button id="cancel-btn">Cancel</button>
+            <button id="submit-btn">Submit Entry</button>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
