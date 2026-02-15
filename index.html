@@ -9,48 +9,57 @@
     <style> body { display: none; } </style>
 
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
-<script>
-    const msalConfig = {
-        auth: {
-            clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
-            authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
-            redirectUri: window.location.origin + "/index.html"
-        },
-        cache: { cacheLocation: "sessionStorage" }
-    };
-
-    const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-    async function initAuth() {
-        try {
-            await msalInstance.initialize();
-            const response = await msalInstance.handleRedirectPromise();
-            const accounts = msalInstance.getAllAccounts();
-
-            if (accounts.length > 0) {
-                console.log("Authenticated!");
-                // 1. Show the body
-                document.body.style.display = "block";
-                
-                // 2. ONLY START THE SCANNER NOW
-                if (typeof startScanner === "function") {
-                    startScanner(); 
-                }
-            } else {
-                if (!window.location.hash.includes("code") && !window.location.hash.includes("id_token")) {
-                    window.location.href = "login.html";
-                }
+    <script>
+        const msalConfig = {
+            auth: {
+                clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
+                authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
+                redirectUri: window.location.origin + "/index.html"
+            },
+            cache: { 
+                cacheLocation: "sessionStorage",
+                storeAuthStateInCookie: true // Set to true to help cross-page communication
             }
-        } catch (err) {
-            console.error("Auth Error:", err);
-            if (!window.location.hash) {
-                window.location.href = "login.html";
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        async function initAuth() {
+            try {
+                await msalInstance.initialize();
+                
+                // 1. Process the redirect from Microsoft
+                await msalInstance.handleRedirectPromise();
+                
+                // 2. Check if we have accounts now
+                const accounts = msalInstance.getAllAccounts();
+
+                if (accounts.length > 0) {
+                    console.log("Logged in successfully!");
+                    msalInstance.setActiveAccount(accounts[0]);
+                    
+                    // 3. SHOW THE PAGE
+                    document.body.style.display = "block";
+                    
+                    // 4. Start the scanner only after we are visible
+                    if (typeof startScanner === "function") {
+                        startScanner();
+                    }
+                } else {
+                    // If no account and no login hash in URL, go to login
+                    if (!window.location.hash.includes("id_token")) {
+                        window.location.replace("login.html");
+                    }
+                }
+            } catch (err) {
+                console.error("Auth error:", err);
+                window.location.replace("login.html");
             }
         }
-    }
 
-    initAuth();
-</script>
+        // Run the check
+        initAuth();
+    </script>
 </head>
 <body>
     <h1>Reclamation</h1>
