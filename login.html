@@ -28,17 +28,26 @@
 <script>
     const msalConfig = {
         auth: {
-            clientId: "271117c1-b933-4ac5-a7d8-551f24878c81", // Paste the ID you just copied
+            clientId: "271117c1-b933-4ac5-a7d8-551f24878c81", 
             authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
-            redirectUri: redirectUri: window.location.origin + "/index.html"
+            redirectUri: window.location.origin + "/index.html" // Fixed the typo here
         }
     };
 
+    // 1. Create the instance
     const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-    document.getElementById('login-btn').addEventListener('click', () => {
-        msalInstance.loginRedirect({
-            scopes: ["user.read"]
+    // 2. WAKE UP the library (New required step)
+    msalInstance.initialize().then(() => {
+        console.log("MSAL is ready!");
+        
+        // 3. Only now can we attach the click event
+        document.getElementById('login-btn').addEventListener('click', () => {
+            msalInstance.loginRedirect({
+                scopes: ["user.read"]
+            });
         });
+    }).catch(err => {
+        console.error("Initialization failed", err);
     });
 </script>
