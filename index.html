@@ -9,57 +9,59 @@
     <style> body { display: none; } </style>
 
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
-    <script>
-        const msalConfig = {
-            auth: {
-                clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
-                authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
-                redirectUri: window.location.origin + "/index.html"
-            },
-            cache: { 
-                cacheLocation: "sessionStorage",
-                storeAuthStateInCookie: true // Set to true to help cross-page communication
-            }
-        };
+<script>
+    const msalConfig = {
+        auth: {
+            clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
+            authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
+            redirectUri: window.location.origin + "/index.html"
+        },
+        cache: { 
+            cacheLocation: "sessionStorage",
+            storeAuthStateInCookie: true 
+        }
+    };
 
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-        async function initAuth() {
-            try {
-                await msalInstance.initialize();
-                
-                // 1. Process the redirect from Microsoft
-                await msalInstance.handleRedirectPromise();
-                
-                // 2. Check if we have accounts now
+    async function initAuth() {
+        try {
+            await msalInstance.initialize();
+            
+            // 1. Process the incoming token
+            await msalInstance.handleRedirectPromise();
+            
+            // 2. Give the browser a tiny moment to settle the session
+            setTimeout(() => {
                 const accounts = msalInstance.getAllAccounts();
 
                 if (accounts.length > 0) {
-                    console.log("Logged in successfully!");
-                    msalInstance.setActiveAccount(accounts[0]);
-                    
-                    // 3. SHOW THE PAGE
+                    console.log("SUCCESS: User found", accounts[0].username);
                     document.body.style.display = "block";
-                    
-                    // 4. Start the scanner only after we are visible
-                    if (typeof startScanner === "function") {
-                        startScanner();
-                    }
+                    // Only start if Quagga/Script.js is loaded
+                    if (typeof startScanner === "function") startScanner();
                 } else {
-                    // If no account and no login hash in URL, go to login
-                    if (!window.location.hash.includes("id_token")) {
-                        window.location.replace("login.html");
+                    // 3. Last chance check: Is there a login token currently in the URL?
+                    if (window.location.hash.includes("id_token") || window.location.hash.includes("access_token")) {
+                        console.log("Token detected, waiting for processing...");
+                        // Don't redirect, just wait another second
+                        setTimeout(initAuth, 1000); 
+                    } else {
+                        console.log("No account found, redirecting to login...");
+                        window.location.href = "login.html";
                     }
                 }
-            } catch (err) {
-                console.error("Auth error:", err);
-                window.location.replace("login.html");
-            }
-        }
+            }, 500);
 
-        // Run the check
-        initAuth();
-    </script>
+        } catch (err) {
+            console.error("Auth Error:", err);
+            // Only redirect if we aren't already trying to log in
+            if (!window.location.hash) window.location.href = "login.html";
+        }
+    }
+
+    initAuth();
+</script>
 </head>
 <body>
     <h1>Reclamation</h1>
