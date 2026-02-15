@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reclamation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Reclamation</h1>
+
+    <div id="scanner-container"></div>
+
+    <div id="result-container">
+        <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
+        <hr>
+        <div id="product-info">
+            <p><strong>Brand:</strong> <span id="brand">-</span></p>
+            <p><strong>Name:</strong> <span id="name">-</span></p>
+            <p><strong>Volume:</strong> <span id="volume">-</span></p>
+            
+            <div class="quantity-section">
+                <label for="quantity"><strong>Quantity:</strong></label>
+                <input type="number" id="quantity" value="1" min="0">
+            </div>
+        </div>
+	<div class="button-group">
+	    <button class="btn btn-reclamation">Reclamation</button>
+            <button class="btn btn-waste">Waste</button>    
+	</div>
+	    <button id="submit-btn">Submit Entry</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
