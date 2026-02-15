@@ -6,65 +6,46 @@
     <title>Reclamation</title>
     <link rel="stylesheet" href="style.css">
 
-    <style>
-        body {
-            display: none; /* same as your original behavior */
-        }
-
-        .bottom-bar {
-            background: #0078d4;
-            color: white;
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-        }
-
-        .logout-btn {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .logout-btn:hover {
-            text-decoration: underline;
-        }
-    </style>
-
     <script>
         async function checkAuth() {
-            const res = await fetch('/.auth/me');
-            const data = await res.json();
+            try {
+                // Azure Static Web Apps built-in auth check
+                const res = await fetch('/.auth/me');
+                const data = await res.json();
 
-            if (!data.clientPrincipal) {
+                // If no user is found, kick to login page
+                if (!data.clientPrincipal) {
+                    window.location.href = "/login.html";
+                    return;
+                }
+
+                // 1. Show the page (reverses 'display: none' in CSS)
+                document.body.style.display = "flex";
+
+                // 2. Display the user's name in the top bar
+                document.getElementById("username").textContent = data.clientPrincipal.userDetails;
+
+                // 3. Start the Quagga scanner from script.js
+                if (typeof startScanner === "function") {
+                    startScanner();
+                }
+            } catch (err) {
+                console.error("Auth check failed", err);
                 window.location.href = "/login.html";
-                return;
-            }
-
-            // Show the page exactly like your original MSAL version
-            document.body.style.display = "block";
-
-            // Show username
-            document.getElementById("username").textContent =
-                data.clientPrincipal.userDetails;
-
-            // Start scanner if available
-            if (typeof startScanner === "function") {
-                startScanner();
             }
         }
 
+        // Run the check immediately
         checkAuth();
     </script>
 </head>
 
 <body>
+    <div class="top-bar">
+        <div>👤 <span id="username"></span></div>
+        <a class="logout-btn" href="/.auth/logout">Logout</a>
+    </div>
 
-    <!-- Your ORIGINAL layout starts here -->
     <h1>Reclamation</h1>
 
     <div id="scanner-container"></div>
@@ -72,6 +53,7 @@
     <div id="result-container">
         <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
         <hr>
+        
         <div id="product-info">
             <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
             <p><strong>Brand:</strong> <span id="brand">-</span></p>
@@ -95,15 +77,8 @@
         </div>
     </div>
 
-    <!-- Bottom bar (moved from top) -->
-    <div class="bottom-bar">
-        <div>Welcome, <span id="username"></span></div>
-        <a class="logout-btn" href="/.auth/logout">Logout</a>
-    </div>
-
-    <!-- Scanner libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    
     <script src="script.js"></script>
-
 </body>
 </html>
