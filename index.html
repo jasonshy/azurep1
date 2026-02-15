@@ -11,13 +11,17 @@
             display: none; /* same as your original behavior */
         }
 
-        .top-bar {
+        .bottom-bar {
             background: #0078d4;
             color: white;
             padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
 
         .logout-btn {
@@ -60,12 +64,6 @@
 
 <body>
 
-    <!-- Top bar (new) -->
-    <div class="top-bar">
-        <div>Welcome, <span id="username"></span></div>
-        <a class="logout-btn" href="/.auth/logout">Logout</a>
-    </div>
-
     <!-- Your ORIGINAL layout starts here -->
     <h1>Reclamation</h1>
 
@@ -95,6 +93,12 @@
             <button id="cancel-btn">Cancel</button>
             <button id="submit-btn">Submit Entry</button>
         </div>
+    </div>
+
+    <!-- Bottom bar (moved from top) -->
+    <div class="bottom-bar">
+        <div>Welcome, <span id="username"></span></div>
+        <a class="logout-btn" href="/.auth/logout">Logout</a>
     </div>
 
     <!-- Scanner libraries -->
