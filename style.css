@@ -1,3 +1,4 @@
+/* 1. LAYOUT & BACKGROUND */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
@@ -11,17 +12,19 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
+/* 2. SCANNER BOX */
 #scanner-container {
     width: 100%;
     max-width: 500px;
     height: 300px;
-    border: 2px solid #333;
-    border-radius: 8px;
+    border: 3px solid #333;
+    border-radius: 12px;
     overflow: hidden;
     background: #000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 #scanner-container video {
@@ -30,111 +33,167 @@ h1 {
     object-fit: cover;
 }
 
+/* 3. PRODUCT INFO CARD */
 #result-container {
     margin-top: 20px;
-    padding: 15px;
+    padding: 20px;
     width: 100%;
     max-width: 500px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#status {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1rem;
+    color: #555;
 }
 
 #product-info p {
-    margin: 12px 0;
-    font-size: 1.1rem;
+    margin: 10px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 5px;
 }
 
-/* This creates the "Label on left, Box on right" effect */
+#product-info strong {
+    color: #2c3e50;
+}
+
+/* 4. QUANTITY SECTION */
 .quantity-section {
     margin-top: 15px;
     display: flex;
-    justify-content: space-between; /* Pushes label left, input right */
+    justify-content: space-between;
     align-items: center;
-    border-top: 1px solid #eee; /* Optional: adds a subtle separator */
-    padding-top: 10px;
+    padding: 15px 0;
 }
 
 #quantity {
-    width: 50px; 
-    height: 1.5rem; /* Matches the text height */
-    padding: 0 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1.1rem;
+    width: 70px; 
+    height: 1.5rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
     text-align: center;
-    font-family: inherit;
+    font-weight: bold;
 }
 
-/* Keeps the input clean on mobile */
 #quantity:focus {
     outline: none;
     border-color: #007bff;
 }
 
-
-/* Container for the buttons */
+/* 5. CATEGORY BUTTONS (The "Selection" Logic) */
 .button-group {
     display: flex;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 12px;
+    margin: 15px 0;
+    width: 100%;
 }
 
-/* Base button styles */
-/* Base button styles */
 .btn {
     flex: 1;
-    padding: 15px;
+    padding: 18px;
     font-size: 1rem;
-    font-weight: bold;
-    border: 2px solid transparent; 
-    border-radius: 8px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: 2px solid transparent;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added a "pop" transition */
+    transition: all 0.2s ease;
     color: white;
-    opacity: 0.5; /* Dimmed when not selected */
-    filter: saturate(80%); /* Slightly desaturated when not selected */
+    
+    /* Default State: Dimmed and slightly grey */
+    opacity: 0.5;
+    filter: grayscale(50%);
 }
 
 .btn-reclamation { background-color: #28a745; }
 .btn-waste { background-color: #dc3545; }
 
-/* The "Selected" State - Sharper and more vibrant */
+/* ACTIVE STATE: When JavaScript adds the .active class */
 .btn.active {
     opacity: 1; 
-    filter: saturate(120%); /* Makes the color "pop" */
-    border: 2px solid #fff; /* Crisp white inner border */
-    outline: 2px solid #333; /* Dark outer ring for sharpness */
+    filter: grayscale(0%) saturate(120%);
     transform: scale(1.05); 
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sharp shadow for depth */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    border: 3px solid white;
+    outline: 4px solid #333; /* Heavy outline for visual confirmation */
 }
 
-/* Hover effect */
-.btn:hover {
+.btn:hover:not(.active) {
     opacity: 0.8;
 }
 
-/* Instant feedback when pressed */
 .btn:active {
     transform: scale(0.95);
 }
 
-
-#submit-btn {
-    width: 100%;
+/* 6. SUBMIT & CANCEL SECTION (Submit & Cancel) */
+.submit-group {
+    display: flex;
+    gap: 12px;              /* Match the gap above */
     margin-top: 15px;
-    padding: 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: white;
-    background-color: #2c3e50; /* Solid Midnight Blue */
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+    width: 100%;           /* Match the width above */
+    align-self: stretch;    /* Match the alignment above */
 }
 
-/* Simple active state for a physical "click" feel without hover effects */
-#submit-btn:active {
-    background-color: #1a252f;
-    transform: translateY(1px);
+/* UNIVERSAL BUTTON STYLE (Applies to all 4) */
+.btn, #submit-btn, #cancel-btn {
+    flex: 1;               /* Key: Forces buttons to grow and fill the space */
+    padding: 18px;
+    font-size: 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+#submit-btn {
+    background-color: #2c3e50;
+    color: white;
+}
+
+#cancel-btn {
+    background-color: #bdc3c7;
+    color: #333;
+}
+
+#submit-btn:active, #cancel-btn:active {
+    transform: scale(0.95);
+}
+
+/* LOGIN PAGE SPECIFIC */
+.login-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Optional: Make the Store Number stand out */
+#result-container h1 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+}
+
+/* Special rules for the Login Button */
+#login-btn {
+    outline: none !important;      /* Removes the black selection ring */
+    border: none !important;       /* Removes the white inner border */
+    transform: none;               /* Resets any "active" scaling */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Soft shadow */
+    opacity: 1 !important;         /* Keeps it bright green */
+    filter: none !important;        /* Keeps the color vibrant */
+}
+
+/* Bring back the "Press" animation specifically for Login */
+#login-btn:active {
+    transform: scale(0.96) !important; /* This is the "push-down" animation */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow gets smaller when pressed */
 }
