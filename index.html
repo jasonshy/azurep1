@@ -24,24 +24,31 @@
         async function checkLogin() {
             try {
                 await msalInstance.initialize();
-                const response = await msalInstance.handleRedirectPromise();
-                const currentAccounts = msalInstance.getAllAccounts();
 
-                if (response || currentAccounts.length > 0) {
+                const response = await msalInstance.handleRedirectPromise();
+
+                // ⭐ FIX: Set active account after redirect
+                if (response && response.account) {
+                    msalInstance.setActiveAccount(response.account);
+                }
+
+                const accounts = msalInstance.getAllAccounts();
+
+                if (accounts.length > 0) {
                     console.log("Logged in!");
-                    // Show the body
                     document.body.style.display = "block";
                 } else {
-                    // Stop everything and leave
                     window.location.replace("login.html");
-                    return; 
                 }
+
             } catch (err) {
                 console.error("Auth Error:", err);
                 window.location.replace("login.html");
             }
         }
-        checkLogin();
+
+        // ⭐ Prevent MSAL timing issues
+        document.addEventListener("DOMContentLoaded", checkLogin);
     </script>
 </head>
 <body>
