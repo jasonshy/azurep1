@@ -55,7 +55,7 @@
         }
 
         // No response, no accounts → go to login
-        window.location.href = "login.html";
+        console.log("No account yet — waiting for MSAL to finish.");
     } catch (err) {
         console.error("Auth Error:", err);
         window.location.href = "login.html";
