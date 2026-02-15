@@ -7,9 +7,8 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        /* Hide the app until authentication is confirmed */
-        #app {
-            display: none;
+        body {
+            display: none; /* same as your original behavior */
         }
 
         .top-bar {
@@ -34,31 +33,24 @@
 
     <script>
         async function checkAuth() {
-            try {
-                const res = await fetch('/.auth/me');
-                const data = await res.json();
+            const res = await fetch('/.auth/me');
+            const data = await res.json();
 
-                if (!data.clientPrincipal) {
-                    // Not logged in → send to login page
-                    window.location.href = "/login.html";
-                    return;
-                }
-
-                // Logged in → show the page
-                document.getElementById("app").style.display = "block";
-
-                // Show username
-                document.getElementById("username").textContent =
-                    data.clientPrincipal.userDetails;
-
-                // Start scanner if available
-                if (typeof startScanner === "function") {
-                    startScanner();
-                }
-
-            } catch (err) {
-                console.error("Auth check failed:", err);
+            if (!data.clientPrincipal) {
                 window.location.href = "/login.html";
+                return;
+            }
+
+            // Show the page exactly like your original MSAL version
+            document.body.style.display = "block";
+
+            // Show username
+            document.getElementById("username").textContent =
+                data.clientPrincipal.userDetails;
+
+            // Start scanner if available
+            if (typeof startScanner === "function") {
+                startScanner();
             }
         }
 
@@ -68,45 +60,41 @@
 
 <body>
 
-    <!-- Top bar with username + logout -->
+    <!-- Top bar (new) -->
     <div class="top-bar">
         <div>Welcome, <span id="username"></span></div>
         <a class="logout-btn" href="/.auth/logout">Logout</a>
     </div>
 
-    <!-- Your entire app UI -->
-    <div id="app">
+    <!-- Your ORIGINAL layout starts here -->
+    <h1>Reclamation</h1>
 
-        <h1>Reclamation</h1>
+    <div id="scanner-container"></div>
 
-        <div id="scanner-container"></div>
+    <div id="result-container">
+        <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
+        <hr>
+        <div id="product-info">
+            <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
+            <p><strong>Brand:</strong> <span id="brand">-</span></p>
+            <p><strong>Name:</strong> <span id="name">-</span></p>
+            <p><strong>Volume:</strong> <span id="volume">-</span></p>
 
-        <div id="result-container">
-            <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
-            <hr>
-            <div id="product-info">
-                <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
-                <p><strong>Brand:</strong> <span id="brand">-</span></p>
-                <p><strong>Name:</strong> <span id="name">-</span></p>
-                <p><strong>Volume:</strong> <span id="volume">-</span></p>
-
-                <div class="quantity-section">
-                    <label for="quantity"><strong>Quantity:</strong></label>
-                    <input type="number" id="quantity" value="1" min="0">
-                </div>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-reclamation">Reclamation</button>
-                <button class="btn btn-waste">Waste</button>
-            </div>
-
-            <div class="submit-group">
-                <button id="cancel-btn">Cancel</button>
-                <button id="submit-btn">Submit Entry</button>
+            <div class="quantity-section">
+                <label for="quantity"><strong>Quantity:</strong></label>
+                <input type="number" id="quantity" value="1" min="0">
             </div>
         </div>
 
+        <div class="button-group">
+            <button class="btn btn-reclamation">Reclamation</button>
+            <button class="btn btn-waste">Waste</button>
+        </div>
+
+        <div class="submit-group">
+            <button id="cancel-btn">Cancel</button>
+            <button id="submit-btn">Submit Entry</button>
+        </div>
     </div>
 
     <!-- Scanner libraries -->
