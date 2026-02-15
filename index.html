@@ -3,19 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner</title>
+    <title>Reclamation</title>
+    <link rel="stylesheet" href="style.css">
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-
+        /* Hide the app until authentication is confirmed */
         #app {
-            display: none; /* Hidden until user is authenticated */
-            padding: 20px;
+            display: none;
         }
 
         .top-bar {
@@ -40,16 +34,32 @@
 
     <script>
         async function checkAuth() {
-            const res = await fetch('/.auth/me');
-            const data = await res.json();
+            try {
+                const res = await fetch('/.auth/me');
+                const data = await res.json();
 
-            if (!data.clientPrincipal) {
+                if (!data.clientPrincipal) {
+                    // Not logged in → send to login page
+                    window.location.href = "/login.html";
+                    return;
+                }
+
+                // Logged in → show the page
+                document.getElementById("app").style.display = "block";
+
+                // Show username
+                document.getElementById("username").textContent =
+                    data.clientPrincipal.userDetails;
+
+                // Start scanner if available
+                if (typeof startScanner === "function") {
+                    startScanner();
+                }
+
+            } catch (err) {
+                console.error("Auth check failed:", err);
                 window.location.href = "/login.html";
-                return;
             }
-
-            document.getElementById("app").style.display = "block";
-            document.getElementById("username").textContent = data.clientPrincipal.userDetails;
         }
 
         checkAuth();
@@ -58,18 +68,49 @@
 
 <body>
 
+    <!-- Top bar with username + logout -->
     <div class="top-bar">
         <div>Welcome, <span id="username"></span></div>
         <a class="logout-btn" href="/.auth/logout">Logout</a>
     </div>
 
+    <!-- Your entire app UI -->
     <div id="app">
-        <!-- Your scanner UI goes here -->
-        <h1>Scanner Page</h1>
-        <p>Your authenticated content goes here.</p>
+
+        <h1>Reclamation</h1>
+
+        <div id="scanner-container"></div>
+
+        <div id="result-container">
+            <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
+            <hr>
+            <div id="product-info">
+                <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
+                <p><strong>Brand:</strong> <span id="brand">-</span></p>
+                <p><strong>Name:</strong> <span id="name">-</span></p>
+                <p><strong>Volume:</strong> <span id="volume">-</span></p>
+
+                <div class="quantity-section">
+                    <label for="quantity"><strong>Quantity:</strong></label>
+                    <input type="number" id="quantity" value="1" min="0">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-reclamation">Reclamation</button>
+                <button class="btn btn-waste">Waste</button>
+            </div>
+
+            <div class="submit-group">
+                <button id="cancel-btn">Cancel</button>
+                <button id="submit-btn">Submit Entry</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Load your scanner logic -->
+    <!-- Scanner libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="script.js"></script>
 
 </body>
