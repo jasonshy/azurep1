@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reclamation</title>
-    <link rel="stylesheet" href="style.css">
-    
-    <style> body { display: none; } </style>
-
-    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
 <script>
     const msalConfig = {
         auth: {
@@ -28,71 +18,38 @@
         try {
             await msalInstance.initialize();
             
-            // 1. Process the incoming token
-            await msalInstance.handleRedirectPromise();
-            
-            // 2. Give the browser a tiny moment to settle the session
-            setTimeout(() => {
-                const accounts = msalInstance.getAllAccounts();
+            // Check if we are returning from a login attempt
+            const isReturningFromAuth = window.location.hash.includes("id_token") || 
+                                       window.location.hash.includes("access_token") ||
+                                       window.location.hash.includes("code");
 
-                if (accounts.length > 0) {
-                    console.log("SUCCESS: User found", accounts[0].username);
-                    document.body.style.display = "block";
-                    // Only start if Quagga/Script.js is loaded
-                    if (typeof startScanner === "function") startScanner();
-                } else {
-                    // 3. Last chance check: Is there a login token currently in the URL?
-                    if (window.location.hash.includes("id_token") || window.location.hash.includes("access_token")) {
-                        console.log("Token detected, waiting for processing...");
-                        // Don't redirect, just wait another second
-                        setTimeout(initAuth, 1000); 
-                    } else {
-                        console.log("No account found, redirecting to login...");
+            const response = await msalInstance.handleRedirectPromise();
+            const accounts = msalInstance.getAllAccounts();
+
+            if (accounts.length > 0) {
+                console.log("Logged in!");
+                document.body.style.display = "block";
+                if (typeof startScanner === "function") startScanner();
+            } else if (isReturningFromAuth) {
+                console.log("Processing login... waiting.");
+                // We are in the middle of logging in, so we stay on the page and wait.
+                // If it fails after 3 seconds, then we redirect.
+                setTimeout(() => {
+                    if (msalInstance.getAllAccounts().length === 0) {
                         window.location.href = "login.html";
+                    } else {
+                        document.body.style.display = "block";
                     }
-                }
-            }, 500);
-
+                }, 3000);
+            } else {
+                // Not logged in and not trying to log in? Go to login page.
+                window.location.href = "login.html";
+            }
         } catch (err) {
             console.error("Auth Error:", err);
-            // Only redirect if we aren't already trying to log in
             if (!window.location.hash) window.location.href = "login.html";
         }
     }
 
     initAuth();
 </script>
-</head>
-<body>
-    <h1>Reclamation</h1>
-
-    <div id="scanner-container"></div>
-
-    <div id="result-container">
-        <p><strong>Status:</strong> <span id="status">Waiting for scan...</span></p>
-        <hr>
-        <div id="product-info">
-            <p><strong>UPC:</strong> <span id="display-upc">-</span></p>
-            <p><strong>Brand:</strong> <span id="brand">-</span></p>
-            <p><strong>Name:</strong> <span id="name">-</span></p>
-            <p><strong>Volume:</strong> <span id="volume">-</span></p>
-            
-            <div class="quantity-section">
-                <label for="quantity"><strong>Quantity:</strong></label>
-                <input type="number" id="quantity" value="1" min="0">
-            </div>
-        </div>
-        <div class="button-group">
-            <button class="btn btn-reclamation">Reclamation</button>
-            <button class="btn btn-waste">Waste</button>    
-        </div>
-        <div class="submit-group">
-            <button id="cancel-btn">Cancel</button>
-            <button id="submit-btn">Submit Entry</button>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
