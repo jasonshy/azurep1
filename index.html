@@ -10,75 +10,67 @@
         body { display: none; } 
     </style>
 
-    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
-    
-    <script>
-        const msalConfig = {
-            auth: {
-                clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
-                authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
-                redirectUri: window.location.origin + "/index.html"
-            },
-            cache: { 
-                cacheLocation: "sessionStorage",
-                storeAuthStateInCookie: true 
-            }
-        };
-
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-        async function initAuth() {
-            try {
-                // Initialize the library
-                await msalInstance.initialize();
-                
-                // Catch the return from Microsoft
-                const response = await msalInstance.handleRedirectPromise();
-                
-                // If we just logged in, set that account as active
-                if (response !== null) {
-                    msalInstance.setActiveAccount(response.account);
-                }
-
-                // Check for existing accounts
-                const currentAccounts = msalInstance.getAllAccounts();
-
-                if (currentAccounts.length > 0) {
-                    console.log("Auth Success: User identified.");
-                    // REVEAL THE PAGE
-                    document.body.style.display = "block";
-                    
-                    // START THE SCANNER (Since script.js is loaded at the bottom)
-                    if (typeof startScanner === "function") {
-                        startScanner();
-                    }
-                } else {
-                    // Check if we are currently in the middle of a redirect
-                    const isAuthHash = window.location.hash.includes("id_token") || 
-                                     window.location.hash.includes("access_token") || 
-                                     window.location.hash.includes("code");
-
-                    if (!isAuthHash) {
-                        console.log("No session found. Redirecting to login...");
-                        window.location.href = "login.html";
-                    } else {
-                        console.log("Token detected in URL. Processing...");
-                        // If there's a hash but no account yet, Microsoft is still "writing" to storage.
-                        // We wait 2 seconds and try one last time.
-                        setTimeout(initAuth, 2000);
-                    }
-                }
-            } catch (err) {
-                console.error("Critical Auth Error:", err);
-                // Clear storage on error to prevent getting stuck in a broken state
-                sessionStorage.clear();
-                window.location.href = "login.html";
-            }
+   <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+<script>
+    const msalConfig = {
+        auth: {
+            clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
+            authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
+            redirectUri: window.location.origin + "/index.html"
+        },
+        cache: { 
+            cacheLocation: "sessionStorage",
+            storeAuthStateInCookie: true 
         }
+    };
 
-        // Start the check as soon as the script loads
-        initAuth();
-    </script>
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+    // 1. SET UP THE LISTENER (The fix you found)
+    msalInstance.addEventCallback((event) => {
+        if (event.eventType === msal.EventType.LOGIN_SUCCESS && event.payload.account) {
+            msalInstance.setActiveAccount(event.payload.account);
+            console.log("Listener caught the login!");
+            showPage();
+        }
+    });
+
+    async function initAuth() {
+        try {
+            await msalInstance.initialize();
+            
+            // 2. Handle the redirect
+            const response = await msalInstance.handleRedirectPromise();
+            
+            if (response) {
+                msalInstance.setActiveAccount(response.account);
+                showPage();
+            } else {
+                // 3. Check if we are already logged in from a previous session
+                const currentAccounts = msalInstance.getAllAccounts();
+                if (currentAccounts.length > 0) {
+                    msalInstance.setActiveAccount(currentAccounts[0]);
+                    showPage();
+                } else if (!window.location.hash.includes("id_token")) {
+                    // No token in URL and no account? Go to login.
+                    window.location.href = "login.html";
+                }
+            }
+        } catch (err) {
+            console.error("Auth Error:", err);
+            if (!window.location.hash) window.location.href = "login.html";
+        }
+    }
+
+    function showPage() {
+        document.body.style.display = "block";
+        if (typeof startScanner === "function") {
+            startScanner();
+        }
+    }
+
+    initAuth();
+</script>
 </head>
 <body>
 
