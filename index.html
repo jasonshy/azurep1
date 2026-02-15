@@ -24,25 +24,25 @@
     async function initAuth() {
         try {
             await msalInstance.initialize();
-            
-            // This line is key: it handles the 'return' from Microsoft
             const response = await msalInstance.handleRedirectPromise();
-            
             const accounts = msalInstance.getAllAccounts();
 
             if (accounts.length > 0) {
-                // If we have an account, show the page
                 console.log("Authenticated!");
+                // 1. Show the body
                 document.body.style.display = "block";
+                
+                // 2. ONLY START THE SCANNER NOW
+                if (typeof startScanner === "function") {
+                    startScanner(); 
+                }
             } else {
-                // If NO account AND we aren't currently in the middle of a login hash
                 if (!window.location.hash.includes("code") && !window.location.hash.includes("id_token")) {
                     window.location.href = "login.html";
                 }
             }
         } catch (err) {
             console.error("Auth Error:", err);
-            // Only redirect if it's a real error, not just a loading state
             if (!window.location.hash) {
                 window.location.href = "login.html";
             }
