@@ -36,30 +36,32 @@
     });
 
     async function initAuth() {
-        try {
-            await msalInstance.initialize();
-            
-            // 2. Handle the redirect
-            const response = await msalInstance.handleRedirectPromise();
-            
-            if (response) {
-                msalInstance.setActiveAccount(response.account);
-                showPage();
-            } else {
-                // 3. Check if we are already logged in from a previous session
-                const currentAccounts = msalInstance.getAllAccounts();
-                if (currentAccounts.length > 0) {
-                    msalInstance.setActiveAccount(currentAccounts[0]);
-                    showPage();
-                } else {
-                    console.log("No active account yet. Waiting for MSAL to finish.");
-                }
-            }
-        } catch (err) {
-            console.error("Auth Error:", err);
-            if (!window.location.hash) window.location.href = "login.html";
+    try {
+        await msalInstance.initialize();
+
+        const response = await msalInstance.handleRedirectPromise();
+
+        if (response && response.account) {
+            msalInstance.setActiveAccount(response.account);
+            showPage();
+            return;
         }
+
+        const currentAccounts = msalInstance.getAllAccounts();
+        if (currentAccounts.length > 0) {
+            msalInstance.setActiveAccount(currentAccounts[0]);
+            showPage();
+            return;
+        }
+
+        // No response, no accounts → go to login
+        window.location.href = "login.html";
+    } catch (err) {
+        console.error("Auth Error:", err);
+        window.location.href = "login.html";
     }
+}
+
 
     function showPage() {
         document.body.style.display = "block";
