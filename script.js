@@ -164,5 +164,3 @@ document.querySelectorAll('.btn-reclamation, .btn-waste').forEach(button => {
         document.getElementById('status').style.color = "green";
     });
 });
-
-startScanner();
