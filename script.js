@@ -56,28 +56,33 @@ async function fetchProductData(barcode) {
 
 // THE RESET BUTTON (SUBMIT)
 document.getElementById('submit-btn').addEventListener('click', function() {
-    // 1. Gather data if you need to save it
     const activeBtn = document.querySelector('.btn.active');
-    
-    // Optional: Only alert if an item was actually found
-    if (document.getElementById('name').innerText !== "Not Found in Database" && !activeBtn) {
-        alert("Please select Reclamation or Waste!");
-        return;
+    const statusEl = document.getElementById('status');
+    const productName = document.getElementById('name').innerText;
+
+    // 1. Check if we actually have a product and if a tag is selected
+    // We only force a selection if a real product was found
+    if (productName !== "-" && productName !== "Not Found in Database" && !activeBtn) {
+        statusEl.innerText = "⚠️ PLEASE SELECT A TAG FIRST!";
+        statusEl.style.color = "red";
+        statusEl.style.fontWeight = "bold";
+        return; // Exit function so camera stays paused but doesn't freeze
     }
 
-    // 2. Clear the UI fields
+    // 2. Clear UI (The "Success" path)
     document.getElementById('brand').innerText = "-";
     document.getElementById('name').innerText = "-";
     document.getElementById('volume').innerText = "-";
     document.getElementById('quantity').value = 1;
     document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
 
-    // 3. IMPORTANT: Reactivate the scanner
+    // 3. Reset Scanner
     isScanning = true;
     document.getElementById('scanner-container').style.opacity = "1";
-    document.getElementById('status').innerText = "Scanning...";
+    statusEl.innerText = "Scanning...";
+    statusEl.style.color = "#333"; // Reset color to normal
+    statusEl.style.fontWeight = "normal";
     
-    // Just in case Quagga actually stopped, this ensures it's running
     Quagga.start(); 
 });
 
