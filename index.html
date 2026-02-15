@@ -9,47 +9,48 @@
     <style> body { display: none; } </style>
 
     <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
-    <script>
-        const msalConfig = {
-            auth: {
-                clientId: "6b6d2509-99da-40aa-a826-31fe6d400328", 
-                authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
-                redirectUri: window.location.origin + "/index.html"
-            },
-            cache: { cacheLocation: "sessionStorage" }
-        };
+<script>
+    const msalConfig = {
+        auth: {
+            clientId: "6b6d2509-99da-40aa-a826-31fe6d400328",
+            authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
+            redirectUri: window.location.origin + "/index.html"
+        },
+        cache: { cacheLocation: "sessionStorage" }
+    };
 
-        const msalInstance = new msal.PublicClientApplication(msalConfig);
+    const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-        async function checkLogin() {
-            try {
-                await msalInstance.initialize();
+    async function initAuth() {
+        try {
+            await msalInstance.initialize();
+            
+            // This line is key: it handles the 'return' from Microsoft
+            const response = await msalInstance.handleRedirectPromise();
+            
+            const accounts = msalInstance.getAllAccounts();
 
-                const response = await msalInstance.handleRedirectPromise();
-
-                // ⭐ FIX: Set active account after redirect
-                if (response && response.account) {
-                    msalInstance.setActiveAccount(response.account);
+            if (accounts.length > 0) {
+                // If we have an account, show the page
+                console.log("Authenticated!");
+                document.body.style.display = "block";
+            } else {
+                // If NO account AND we aren't currently in the middle of a login hash
+                if (!window.location.hash.includes("code") && !window.location.hash.includes("id_token")) {
+                    window.location.href = "login.html";
                 }
-
-                const accounts = msalInstance.getAllAccounts();
-
-                if (accounts.length > 0) {
-                    console.log("Logged in!");
-                    document.body.style.display = "block";
-                } else {
-                    window.location.replace("login.html");
-                }
-
-            } catch (err) {
-                console.error("Auth Error:", err);
-                window.location.replace("login.html");
+            }
+        } catch (err) {
+            console.error("Auth Error:", err);
+            // Only redirect if it's a real error, not just a loading state
+            if (!window.location.hash) {
+                window.location.href = "login.html";
             }
         }
+    }
 
-        // ⭐ Prevent MSAL timing issues
-        document.addEventListener("DOMContentLoaded", checkLogin);
-    </script>
+    initAuth();
+</script>
 </head>
 <body>
     <h1>Reclamation</h1>
