@@ -1,29 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
-    // 1. Check if we already have a session
-    let isLoggedIn = sessionStorage.getItem('azureUser'); 
-
-    // 2. Check the URL: Did Azure just send us back with a 'code' or 'token'?
-    const urlParams = new URLSearchParams(window.location.hash || window.location.search);
-    if (urlParams.has('id_token') || urlParams.has('access_token')) {
-        sessionStorage.setItem('azureUser', 'true');
-        isLoggedIn = 'true';
-        // Clean the URL so it looks professional again
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    // 3. If still not logged in, kick to login page
-    if (!isLoggedIn) {
-        window.location.href = "login.html";
-    }
-    </script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reclamation</title>
     <link rel="stylesheet" href="style.css">
+
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    <script>
+        const msalConfig = {
+            auth: {
+                clientId: "6b6d2509-99da-40aa-a826-31fe6d400328", 
+                authority: "https://login.microsoftonline.com/90f3f200-a8e1-42dc-947a-65f9fc0cd0b4",
+                redirectUri: window.location.origin + "/index.html"
+            },
+            cache: {
+                cacheLocation: "sessionStorage" // Keeps you logged in even if you refresh
+            }
+        };
+
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        // This single function handles the logic for both "Just Arrived from Login" 
+        // and "Already here but checking status"
+        msalInstance.initialize().then(() => {
+            msalInstance.handleRedirectPromise().then(response => {
+                // Check if we have a valid account in cache or just received one
+                const currentAccounts = msalInstance.getAllAccounts();
+                
+                if (response || currentAccounts.length > 0) {
+                    // SUCCESS: User is authenticated.
+                    const account = response ? response.account : currentAccounts[0];
+                    msalInstance.setActiveAccount(account);
+                    console.log("Logged in as:", account.username);
+                    
+                    // Optional: Clean up the URL hash
+                    if (window.location.hash) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } else {
+                    // FAILURE: No account found. Go to login.
+                    window.location.href = "login.html";
+                }
+            }).catch(err => {
+                console.error("Auth Error:", err);
+                window.location.href = "login.html";
+            });
+        });
+    </script>
 </head>
 <body>
 
