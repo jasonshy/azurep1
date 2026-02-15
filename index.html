@@ -5,42 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reclamation</title>
     <link rel="stylesheet" href="style.css">
-
-    <script>
-        async function checkAuth() {
-            try {
-                // Azure Static Web Apps built-in auth check
-                const res = await fetch('/.auth/me');
-                const data = await res.json();
-
-                // If no user is found, kick to login page
-                if (!data.clientPrincipal) {
-                    window.location.href = "/login.html";
-                    return;
-                }
-
-                // 1. Show the page (reverses 'display: none' in CSS)
-                document.body.style.display = "flex";
-
-                // 2. Display the user's name in the top bar
-                document.getElementById("username").textContent = data.clientPrincipal.userDetails;
-
-                // 3. Start the Quagga scanner from script.js
-                if (typeof startScanner === "function") {
-                    startScanner();
-                }
-            } catch (err) {
-                console.error("Auth check failed", err);
-                window.location.href = "/login.html";
-            }
-        }
-
-        // Run the check immediately
-        checkAuth();
-    </script>
 </head>
-
 <body>
+
     <div class="top-bar">
         <div>👤 <span id="username"></span></div>
         <a class="logout-btn" href="/.auth/logout">Logout</a>
@@ -80,5 +47,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     
     <script src="script.js"></script>
+
+    <script>
+        async function checkAuth() {
+            try {
+                const res = await fetch('/.auth/me');
+                const data = await res.json();
+
+                // If not logged in, redirect
+                if (!data.clientPrincipal) {
+                    window.location.href = "/login.html";
+                    return;
+                }
+
+                // Logged in! Reveal the page
+                document.body.style.display = "flex";
+                document.getElementById("username").textContent = data.clientPrincipal.userDetails;
+
+                // Fire the camera!
+                if (typeof startScanner === "function") {
+                    console.log("Starting scanner...");
+                    startScanner();
+                } else {
+                    console.error("startScanner function not found in script.js");
+                }
+            } catch (err) {
+                console.error("Auth check failed", err);
+                window.location.href = "/login.html";
+            }
+        }
+
+        // Execute immediately after everything above is loaded
+        checkAuth();
+    </script>
 </body>
 </html>
