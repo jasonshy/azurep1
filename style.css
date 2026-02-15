@@ -1,23 +1,51 @@
 /* 1. LAYOUT & BACKGROUND */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
+    display: none; /* Controlled by checkAuth() in HTML */
     flex-direction: column;
     align-items: center;
     background-color: #f4f4f9;
     margin: 0;
-    padding: 20px;
+    padding: 0; /* Changed to 0 to let the Top Bar touch the edges */
+}
+
+/* NEW: TOP BAR STYLES */
+.top-bar {
+    width: 100%;
+    background: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.logout-btn {
+    color: white;
+    text-decoration: none;
+    background: #e74c3c;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.logout-btn:hover {
+    background: #c0392b;
 }
 
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 15px;
+    margin: 20px 0 15px 0; /* Adjusted margin for the new bar */
 }
 
 /* 2. SCANNER BOX */
 #scanner-container {
-    width: 100%;
+    width: 90%; /* Changed to percentage for better mobile centering */
     max-width: 500px;
     height: 300px;
     border: 3px solid #333;
@@ -36,12 +64,14 @@ h1 {
 /* 3. PRODUCT INFO CARD */
 #result-container {
     margin-top: 20px;
+    margin-bottom: 20px;
     padding: 20px;
-    width: 100%;
+    width: 90%;
     max-width: 500px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
 #status {
@@ -87,7 +117,7 @@ h1 {
     border-color: #007bff;
 }
 
-/* 5. CATEGORY BUTTONS (The "Selection" Logic) */
+/* 5. CATEGORY BUTTONS */
 .button-group {
     display: flex;
     gap: 12px;
@@ -106,8 +136,6 @@ h1 {
     cursor: pointer;
     transition: all 0.2s ease;
     color: white;
-    
-    /* Default State: Dimmed and slightly grey */
     opacity: 0.5;
     filter: grayscale(50%);
 }
@@ -115,36 +143,25 @@ h1 {
 .btn-reclamation { background-color: #28a745; }
 .btn-waste { background-color: #dc3545; }
 
-/* ACTIVE STATE: When JavaScript adds the .active class */
 .btn.active {
     opacity: 1; 
     filter: grayscale(0%) saturate(120%);
     transform: scale(1.05); 
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
     border: 3px solid white;
-    outline: 4px solid #333; /* Heavy outline for visual confirmation */
+    outline: 4px solid #333;
 }
 
-.btn:hover:not(.active) {
-    opacity: 0.8;
-}
-
-.btn:active {
-    transform: scale(0.95);
-}
-
-/* 6. SUBMIT & CANCEL SECTION (Submit & Cancel) */
+/* 6. SUBMIT & CANCEL SECTION */
 .submit-group {
     display: flex;
-    gap: 12px;              /* Match the gap above */
+    gap: 12px;
     margin-top: 15px;
-    width: 100%;           /* Match the width above */
-    align-self: stretch;    /* Match the alignment above */
+    width: 100%;
 }
 
-/* UNIVERSAL BUTTON STYLE (Applies to all 4) */
-.btn, #submit-btn, #cancel-btn {
-    flex: 1;               /* Key: Forces buttons to grow and fill the space */
+#submit-btn, #cancel-btn {
+    flex: 1;
     padding: 18px;
     font-size: 1rem;
     font-weight: 800;
@@ -154,6 +171,7 @@ h1 {
     border: none;
     transition: all 0.2s ease;
 }
+
 #submit-btn {
     background-color: #2c3e50;
     color: white;
@@ -174,26 +192,14 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-top: 50px;
 }
 
-/* Optional: Make the Store Number stand out */
-#result-container h1 {
-    font-size: 1.5rem;
-    color: #2c3e50;
-}
-
-/* Special rules for the Login Button */
 #login-btn {
-    outline: none !important;      /* Removes the black selection ring */
-    border: none !important;       /* Removes the white inner border */
-    transform: none;               /* Resets any "active" scaling */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Soft shadow */
-    opacity: 1 !important;         /* Keeps it bright green */
-    filter: none !important;        /* Keeps the color vibrant */
-}
-
-/* Bring back the "Press" animation specifically for Login */
-#login-btn:active {
-    transform: scale(0.96) !important; /* This is the "push-down" animation */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow gets smaller when pressed */
+    width: 100%;
+    max-width: 300px;
+    background-color: #28a745;
+    color: white;
+    opacity: 1 !important;
+    filter: none !important;
 }
