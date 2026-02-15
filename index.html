@@ -55,12 +55,13 @@
         }
 
         // No response, no accounts → go to login
-        console.log("No account yet — waiting for MSAL to finish.");
+        window.location.href = "login.html";
     } catch (err) {
         console.error("Auth Error:", err);
         window.location.href = "login.html";
     }
 }
+
 
 
     function showPage() {
