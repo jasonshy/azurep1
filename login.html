@@ -43,7 +43,6 @@
 
     // 2. WAKE UP the library (New required step)
     msalInstance.initialize().then(() => {
-        sessionStorage.clear();
         console.log("MSAL is ready!");
         
         // 3. Only now can we attach the click event
