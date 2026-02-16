@@ -72,7 +72,7 @@ async function sendToAzure() {
     };
 
     try {
-        await fetch("http://localhost:7071/api/writeData", {
+        await fetch("https://handler1.azurewebsites.net/api/writeData", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
