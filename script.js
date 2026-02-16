@@ -1,5 +1,5 @@
 let isScanning = true;
-let selectedCategory = "None"; // Track category
+let selectedCategory = "None";
 
 function startScanner() {
     Quagga.init({
@@ -20,10 +20,10 @@ function startScanner() {
 }
 
 Quagga.onDetected(function (data) {
-    if (!isScanning) return; 
+    if (!isScanning) return;
 
     const code = data.codeResult.code;
-    isScanning = false; 
+    isScanning = false;
     document.getElementById('display-upc').innerText = code;
     document.getElementById('scanner-container').style.opacity = "0.5";
     document.getElementById('status').innerText = `Scanned: ${code}`;
@@ -33,7 +33,7 @@ Quagga.onDetected(function (data) {
 
 async function fetchProductData(barcode) {
     const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
-    // Always ensure the UPC is ready for the payload
+
     document.getElementById('display-upc').innerText = barcode;
 
     try {
@@ -68,11 +68,10 @@ async function sendToAzure() {
         description: combinedDescription,
         quantity: document.getElementById('quantity').value,
         initials: "JY",
-        category: selectedCategory 
+        category: selectedCategory
     };
 
     try {
-        // Change this URL to your Azure URL when you deploy!
         await fetch("http://localhost:7071/api/writeData", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -81,85 +80,62 @@ async function sendToAzure() {
         console.log("Data sent to Azure.");
     } catch (error) {
         console.error("Save failed:", error);
-        alert("Failed to save to Azure. Check connection.");
+        alert("Failed to save to Azure.");
     }
 }
 
-// THE RESET & SUBMIT BUTTON
 document.getElementById('submit-btn').addEventListener('click', async function() {
     const statusEl = document.getElementById('status');
     const upcValue = document.getElementById('display-upc').innerText;
 
-    // 1. Validation: Still check if a category is selected at least once
     if (upcValue === "-" || upcValue === "" || selectedCategory === "None") {
         statusEl.innerText = "⚠️ MUST SCAN AND SELECT CATEGORY!";
         statusEl.style.color = "red";
-        return; 
+        return;
     }
 
-    // 2. TRIGGER THE SAVE
     statusEl.innerText = "Saving...";
-    await sendToAzure(); 
+    await sendToAzure();
 
-    // 3. Clear PRODUCT UI only (Leave the button alone!)
     document.getElementById('display-upc').innerText = "-";
     document.getElementById('brand').innerText = "-";
     document.getElementById('name').innerText = "-";
     document.getElementById('volume').innerText = "-";
     document.getElementById('quantity').value = 1;
-    
-    // REMOVED: document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
-    // REMOVED: selectedCategory = "None";
-    // This allows the last selected button to "stay" active for the next scan.
 
-    // 4. Reset Scanner
     isScanning = true;
     document.getElementById('scanner-container').style.opacity = "1";
     statusEl.innerText = `Saved! Ready for next ${selectedCategory} item...`;
     statusEl.style.color = "green";
-    Quagga.start(); 
+    Quagga.start();
 });
 
-
-// THE CANCEL BUTTON (Clean Slate)
 document.getElementById('cancel-btn').addEventListener('click', function() {
     const statusEl = document.getElementById('status');
 
-    // 1. Clear PRODUCT UI
     document.getElementById('display-upc').innerText = "-";
     document.getElementById('brand').innerText = "-";
     document.getElementById('name').innerText = "-";
     document.getElementById('volume').innerText = "-";
-    
-    // 2. Reset Quantity to 1
     document.getElementById('quantity').value = 1;
 
-    // 3. Reset Scanner
     isScanning = true;
     document.getElementById('scanner-container').style.opacity = "1";
     statusEl.innerText = "Scan cancelled. Ready again...";
     statusEl.style.color = "#333";
-    
-    Quagga.start(); 
-    console.log("Entry discarded by user.");
+
+    Quagga.start();
 });
 
-// TAG SELECTION LOGIC
-// This handles the "keeping it selected" behavior
 document.querySelectorAll('.btn-reclamation, .btn-waste').forEach(button => {
     button.addEventListener('click', function() {
-        // Remove 'active' from all buttons in the group
         document.querySelectorAll('.btn-reclamation, .btn-waste').forEach(btn => {
             btn.classList.remove('active');
         });
-        
-        // Add 'active' to the one just clicked
+
         this.classList.add('active');
-        
-        // Update our variable (using trim to avoid hidden spaces)
-        selectedCategory = this.innerText.trim(); 
-        
-        // Update status to show user it's selected
+        selectedCategory = this.innerText.trim();
+
         document.getElementById('status').innerText = "Category: " + selectedCategory;
         document.getElementById('status').style.color = "green";
     });
