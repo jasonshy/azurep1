@@ -44,16 +44,14 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_CALM_ROCK_050E38B1E }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/" # App source code path
-          api_location: "api" # Api source code path - optional
-          output_location: "." # Built app content directory - optional
-          app_build_command: "echo 'No build needed'"
-          api_build_command: "npm install"
-          #skip_app_build: true  # <--- ADD THIS LINE EXACTLY HERE
+          app_location: "/" 
+          api_location: "api" 
+          output_location: ""    # Leave this empty
+          skip_app_build: false  # Let it try one more time
+          skip_api_build: false
           github_id_token: ${{ steps.idtoken.outputs.result }}
-          ###### End of Repository/Build Configurations ######
+
+          
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -65,6 +63,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
 
 
