@@ -46,9 +46,10 @@ jobs:
           action: "upload"
           app_location: "/" 
           api_location: "api" 
-          output_location: ""    # Leave this empty
-          skip_app_build: false  # Let it try one more time
-          skip_api_build: false
+          output_location: "" 
+          # These two lines tell Azure "Don't look for scripts, just deploy the files"
+          app_build_command: "echo 'No build'"
+          api_build_command: "npm install"
           github_id_token: ${{ steps.idtoken.outputs.result }}
 
           
@@ -63,6 +64,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
 
 
