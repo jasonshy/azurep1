@@ -34,12 +34,12 @@
         </div>
 
         <div class="button-group">
-            <button class="btn btn-reclamation" onclick="setCategory('Reclamation')">Reclamation</button>
-            <button class="btn btn-waste" onclick="setCategory('Waste')">Waste</button>
+            <button class="btn btn-reclamation">Reclamation</button>
+            <button class="btn btn-waste">Waste</button>
         </div>
 
         <div class="submit-group">
-            <button id="cancel-btn" onclick="location.reload()">Cancel</button>
+            <button id="cancel-btn">Cancel</button>
             <button id="submit-btn">Submit Entry</button>
         </div>
     </div>
@@ -48,68 +48,6 @@
     <script src="script.js"></script>
 
     <script>
-        // --- DATA TRACKING ---
-        let selectedCategory = "General"; 
-
-        function setCategory(cat) {
-            selectedCategory = cat;
-            document.getElementById('status').innerText = "Category Selected: " + cat;
-            
-            // Visual feedback: Optional, makes buttons look "active"
-            console.log("Category set to:", cat);
-        }
-
-        // --- AZURE SUBMISSION ---
-        async function submitToAzure() {
-            const btn = document.getElementById('submit-btn');
-            
-            // NOTE: If you get a 401 error, you must paste the URL that includes the ?code= key
-            const url = "https://handler1.azurewebsites.net/api/writeData?code=https://handler1.azurewebsites.net/api/writeData"; 
-
-            // Gather values from the UI
-            const payload = {
-                upc: document.getElementById('display-upc').innerText,
-                description: `${document.getElementById('brand').innerText} - ${document.getElementById('name').innerText} (${document.getElementById('volume').innerText})`,
-                category: selectedCategory,
-                quantity: parseInt(document.getElementById('quantity').value) || 1,
-                initials: document.getElementById('username').innerText || "User"
-            };
-
-            // Don't submit if no item is scanned
-            if (payload.upc === "-" || payload.upc === "") {
-                alert("Please scan an item first!");
-                return;
-            }
-
-            try {
-                btn.innerText = "Saving...";
-                btn.disabled = true;
-
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    alert("Success! Data saved to Azure Table Storage.");
-                    location.reload(); // Refresh the page to clear for next scan
-                } else {
-                    const errorText = await response.text();
-                    alert("Azure Error: " + response.status + " - " + errorText);
-                }
-            } catch (err) {
-                console.error("Submission failed:", err);
-                alert("Connection failed. Did you enable CORS in the Azure Function App?");
-            } finally {
-                btn.innerText = "Submit Entry";
-                btn.disabled = false;
-            }
-        }
-
-        // Attach event listener to the button
-        document.getElementById('submit-btn').addEventListener('click', submitToAzure);
-
         // --- AUTHENTICATION CHECK ---
         async function checkAuth() {
             try {
@@ -121,16 +59,14 @@
                     return;
                 }
 
-                // Show the UI and set the username
                 document.body.style.display = "flex";
                 document.getElementById("username").textContent = data.clientPrincipal.userDetails;
 
-                // Start the scanner from script.js after a short delay
                 setTimeout(() => {
                     if (typeof startScanner === "function") {
                         startScanner();
                     } else {
-                        document.getElementById('status').innerText = "Error: startScanner() not found in script.js";
+                        document.getElementById('status').innerText = "Error: startScanner() not found.";
                     }
                 }, 300);
 
@@ -140,7 +76,6 @@
             }
         }
 
-        // Start the process
         checkAuth();
     </script>
 </body>
