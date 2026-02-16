@@ -6,9 +6,7 @@
     <title>Reclamation</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-    <div class="top-bar">
+<body style="display: none;"> <div class="top-bar">
         <div>👤 <span id="username"></span></div>
         <a class="logout-btn" href="/.auth/logout">Logout</a>
     </div>
@@ -34,55 +32,101 @@
         </div>
 
         <div class="button-group">
-            <button class="btn btn-reclamation">Reclamation</button>
-            <button class="btn btn-waste">Waste</button>
+            <button class="btn btn-reclamation" onclick="setCategory('Reclamation')">Reclamation</button>
+            <button class="btn btn-waste" onclick="setCategory('Waste')">Waste</button>
         </div>
 
         <div class="submit-group">
-            <button id="cancel-btn">Cancel</button>
+            <button id="cancel-btn" onclick="location.reload()">Cancel</button>
             <button id="submit-btn">Submit Entry</button>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    
     <script src="script.js"></script>
 
     <script>
+        let selectedCategory = "General"; // Default category
+
+        function setCategory(cat) {
+            selectedCategory = cat;
+            document.getElementById('status').innerText = "Category: " + cat;
+            // Optional: add a CSS class to highlight the selected button
+        }
+
+        async function submitToAzure() {
+            const btn = document.getElementById('submit-btn');
+            const url = "https://handler1.azurewebsites.net/api/writeData"; // <--- PASTE YOUR URL HERE
+
+            // Gather data from the screen
+            const payload = {
+                upc: document.getElementById('display-upc').innerText,
+                description: `${document.getElementById('brand').innerText} - ${document.getElementById('name').innerText} (${document.getElementById('volume').innerText})`,
+                category: selectedCategory,
+                quantity: parseInt(document.getElementById('quantity').value),
+                initials: document.getElementById('username').innerText
+            };
+
+            if (payload.upc === "-" || payload.upc === "") {
+                alert("Please scan an item first!");
+                return;
+            }
+
+            try {
+                btn.innerText = "Saving...";
+                btn.disabled = true;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("Success! Entry saved.");
+                    location.reload(); // Refresh to scan next item
+                } else {
+                    const txt = await response.text();
+                    alert("Error from Azure: " + txt);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Connection failed. Check your internet and Azure CORS settings.");
+            } finally {
+                btn.innerText = "Submit Entry";
+                btn.disabled = false;
+            }
+        }
+
+        // Attach the click event to your submit button
+        document.getElementById('submit-btn').addEventListener('click', submitToAzure);
+
         async function checkAuth() {
             try {
                 const res = await fetch('/.auth/me');
                 const data = await res.json();
 
-                // If not logged in, go to login page
                 if (!data.clientPrincipal) {
                     window.location.href = "/login.html";
                     return;
                 }
 
-                // 1. Reveal the UI
                 document.body.style.display = "flex";
                 document.getElementById("username").textContent = data.clientPrincipal.userDetails;
 
-                // 2. DELAY: Wait 300ms to ensure the black box is actually visible 
-                // on the screen before asking for the camera.
                 setTimeout(() => {
                     if (typeof startScanner === "function") {
-                        console.log("Requesting camera now...");
                         startScanner();
                     } else {
-                        console.error("startScanner function is missing from script.js!");
                         document.getElementById('status').innerText = "App Error: Code Missing";
                     }
                 }, 300);
 
             } catch (err) {
-                console.error("Auth check failed", err);
                 window.location.href = "/login.html";
             }
         }
 
-        // Run the process
         checkAuth();
     </script>
 </body>
