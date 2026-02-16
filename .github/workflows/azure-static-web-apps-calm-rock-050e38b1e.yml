@@ -19,16 +19,15 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build And Deploy
+        id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_CALM_ROCK_050E38B1E }}
           action: "upload"
-          app_location: "/"
-          api_location: "api"
-          output_location: "/"
-        env:
-          FUNCTIONS_EXTENSION_VERSION: "~4"
-          WEBSITE_NODE_DEFAULT_VERSION: "~18"
+          app_location: "/"          # Where your website files are
+          api_location: ""           # EMPTY: Tells Azure to skip the API build
+          output_location: "/"       # The root directory
+          #github_id_token: ${{ steps.idtoken.outputs.result }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -39,3 +38,4 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
