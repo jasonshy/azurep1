@@ -14,9 +14,11 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
-
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
 
       - name: Build And Deploy
         id: builddeploy
@@ -24,10 +26,12 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_CALM_ROCK_050E38B1E }}
           action: "upload"
-          app_location: "/"          # Where your website files are
-          api_location: ""           # EMPTY: Tells Azure to skip the API build
-          output_location: "/"       # The root directory
-          github_id_token: ${{ steps.idtoken.outputs.result }}
+          ###### Build Configurations ######
+          app_location: "/"          # Path to your HTML files
+          api_location: ""           # Leaving this empty stops the API errors
+          output_location: "/"       # Path to your static content
+          app_build_command: "echo 'Skipping frontend build'" 
+          ###### End of Build Configurations ######
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -35,8 +39,8 @@ jobs:
     name: Close Pull Request Job
     steps:
       - name: Close Pull Request
+        id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_CALM_ROCK_050E38B1E }}
           action: "close"
-
-
