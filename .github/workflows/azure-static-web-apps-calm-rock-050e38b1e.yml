@@ -22,6 +22,12 @@ jobs:
         with:
           submodules: true
           lfs: false
+      # ADD THESE LINES HERE
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # END OF ADDED LINES
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
@@ -57,6 +63,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
 
 
