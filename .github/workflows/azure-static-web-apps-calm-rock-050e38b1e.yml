@@ -55,8 +55,9 @@ jobs:
           #output_location: "" 
           # These two lines tell Azure "Don't look for scripts, just deploy the files"
           github_id_token: ${{ steps.idtoken.outputs.result }}
-
-          
+        env: 
+          WEBSITE_NODE_DEFAULT_VERSION: "~20"
+            
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -68,6 +69,7 @@ jobs:
         uses: Azure/static-web-apps-deploy@v1
         with:
           action: "close"
+
 
 
 
