@@ -6,7 +6,7 @@ body {
     align-items: center;
     background-color: #f4f4f9;
     margin: 0;
-    padding: 0; /* Changed to 0 to let the Top Bar touch the edges */
+    padding: 0;
 }
 
 /* NEW: TOP BAR STYLES */
@@ -40,24 +40,24 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin: 20px 0 15px 0; /* Adjusted margin for the new bar */
+    margin: 20px 0 15px 0;
 }
 
-/* 2. SCANNER BOX */
+/* 2. SCANNER BOX — REPLACED */
 #scanner-container {
-    width: 90%; /* Changed to percentage for better mobile centering */
-    max-width: 500px;
-    height: 300px;
+    width: 300px;
+    height: 120px;
+    margin: 0 auto;
     border: 3px solid #333;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
-    background: #000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    position: relative;
 }
 
-#scanner-container video {
-    width: 100%;
-    height: 100%;
+#scanner-container video,
+#scanner-container canvas {
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
 }
 
