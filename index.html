@@ -6,7 +6,9 @@
     <title>Reclamation</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="display: none;"> <div class="top-bar">
+<body style="display: none;"> 
+
+    <div class="top-bar">
         <div>👤 <span id="username"></span></div>
         <a class="logout-btn" href="/.auth/logout">Logout</a>
     </div>
@@ -46,27 +48,34 @@
     <script src="script.js"></script>
 
     <script>
-        let selectedCategory = "General"; // Default category
+        // --- DATA TRACKING ---
+        let selectedCategory = "General"; 
 
         function setCategory(cat) {
             selectedCategory = cat;
-            document.getElementById('status').innerText = "Category: " + cat;
-            // Optional: add a CSS class to highlight the selected button
+            document.getElementById('status').innerText = "Category Selected: " + cat;
+            
+            // Visual feedback: Optional, makes buttons look "active"
+            console.log("Category set to:", cat);
         }
 
+        // --- AZURE SUBMISSION ---
         async function submitToAzure() {
             const btn = document.getElementById('submit-btn');
-            const url = "https://handler1.azurewebsites.net/api/writeData"; // <--- PASTE YOUR URL HERE
+            
+            // NOTE: If you get a 401 error, you must paste the URL that includes the ?code= key
+            const url = "https://handler1.azurewebsites.net/api/writeData"; 
 
-            // Gather data from the screen
+            // Gather values from the UI
             const payload = {
                 upc: document.getElementById('display-upc').innerText,
                 description: `${document.getElementById('brand').innerText} - ${document.getElementById('name').innerText} (${document.getElementById('volume').innerText})`,
                 category: selectedCategory,
-                quantity: parseInt(document.getElementById('quantity').value),
-                initials: document.getElementById('username').innerText
+                quantity: parseInt(document.getElementById('quantity').value) || 1,
+                initials: document.getElementById('username').innerText || "User"
             };
 
+            // Don't submit if no item is scanned
             if (payload.upc === "-" || payload.upc === "") {
                 alert("Please scan an item first!");
                 return;
@@ -83,24 +92,25 @@
                 });
 
                 if (response.ok) {
-                    alert("Success! Entry saved.");
-                    location.reload(); // Refresh to scan next item
+                    alert("Success! Data saved to Azure Table Storage.");
+                    location.reload(); // Refresh the page to clear for next scan
                 } else {
-                    const txt = await response.text();
-                    alert("Error from Azure: " + txt);
+                    const errorText = await response.text();
+                    alert("Azure Error: " + response.status + " - " + errorText);
                 }
             } catch (err) {
-                console.error(err);
-                alert("Connection failed. Check your internet and Azure CORS settings.");
+                console.error("Submission failed:", err);
+                alert("Connection failed. Did you enable CORS in the Azure Function App?");
             } finally {
                 btn.innerText = "Submit Entry";
                 btn.disabled = false;
             }
         }
 
-        // Attach the click event to your submit button
+        // Attach event listener to the button
         document.getElementById('submit-btn').addEventListener('click', submitToAzure);
 
+        // --- AUTHENTICATION CHECK ---
         async function checkAuth() {
             try {
                 const res = await fetch('/.auth/me');
@@ -111,22 +121,26 @@
                     return;
                 }
 
+                // Show the UI and set the username
                 document.body.style.display = "flex";
                 document.getElementById("username").textContent = data.clientPrincipal.userDetails;
 
+                // Start the scanner from script.js after a short delay
                 setTimeout(() => {
                     if (typeof startScanner === "function") {
                         startScanner();
                     } else {
-                        document.getElementById('status').innerText = "App Error: Code Missing";
+                        document.getElementById('status').innerText = "Error: startScanner() not found in script.js";
                     }
                 }, 300);
 
             } catch (err) {
+                console.error("Auth Check failed", err);
                 window.location.href = "/login.html";
             }
         }
 
+        // Start the process
         checkAuth();
     </script>
 </body>
